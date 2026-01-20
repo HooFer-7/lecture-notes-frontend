@@ -31,21 +31,155 @@
             background: linear-gradient(135deg, #5e72e4, #825ee4);
             color: white;
             padding: 30px;
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        header h1 {
+        .header-left h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
         }
 
-        header p {
+        .header-left p {
             opacity: 0.9;
             font-size: 1.1em;
         }
 
+        .header-right {
+            text-align: right;
+        }
+
+        .user-info {
+            display: none;
+        }
+
+        .user-info.show {
+            display: block;
+        }
+
+        .user-name {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: white;
+            color: #5e72e4;
+        }
+
+        /* Auth Modal */
+        .auth-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .auth-modal.hidden {
+            display: none;
+        }
+
+        .auth-box {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .auth-box h2 {
+            color: #2d3748;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .auth-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .auth-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 20px;
+            color: #718096;
+        }
+
+        .auth-switch a {
+            color: #667eea;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+
         .main-content {
             padding: 40px;
+            display: none;
+        }
+
+        .main-content.show {
+            display: block;
         }
 
         .upload-section {
@@ -61,6 +195,21 @@
         .upload-section:hover {
             border-color: #667eea;
             background: #f1f3ff;
+        }
+
+        .upload-section h2 {
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+
+        .title-input {
+            width: 100%;
+            max-width: 500px;
+            padding: 12px;
+            margin: 15px 0;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1em;
         }
 
         .upload-btn {
@@ -80,34 +229,42 @@
             box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
         }
 
-        .record-btn {
-            background: linear-gradient(135deg, #f093fb, #f5576c);
+        .upload-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
         input[type="file"] {
             display: none;
         }
 
-        .recording-indicator {
+        .status-message {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
             display: none;
-            color: #f5576c;
-            margin-top: 15px;
-            font-weight: bold;
-            animation: pulse 1.5s infinite;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .processing {
+        .status-message.processing {
             background: #fff3cd;
             border-left: 4px solid #ffc107;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 5px;
-            display: none;
+            color: #856404;
+            display: block;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+            display: block;
         }
 
         .notes-container {
@@ -117,6 +274,22 @@
             margin-top: 30px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             display: none;
+        }
+
+        .notes-container.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .notes-title {
@@ -138,12 +311,21 @@
 
         .section {
             margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
         }
 
         .section h3 {
             color: #667eea;
             font-size: 1.5em;
             margin-bottom: 15px;
+        }
+
+        .section-content {
+            margin: 15px 0;
+            line-height: 1.6;
+            color: #4a5568;
         }
 
         .bullet-points {
@@ -155,6 +337,7 @@
             padding: 10px 0;
             padding-left: 30px;
             position: relative;
+            line-height: 1.5;
         }
 
         .bullet-points li:before {
@@ -163,6 +346,7 @@
             left: 0;
             color: #667eea;
             font-weight: bold;
+            font-size: 1.2em;
         }
 
         .key-terms {
@@ -181,6 +365,18 @@
             font-weight: 500;
         }
 
+        .action-items {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .action-items h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
         .download-btn {
             background: #28a745;
             color: white;
@@ -190,10 +386,21 @@
             cursor: pointer;
             margin-top: 20px;
             font-size: 1em;
+            transition: transform 0.2s;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
         }
 
         .lectures-list {
-            margin-top: 30px;
+            margin-top: 40px;
+        }
+
+        .lectures-list h3 {
+            color: #2d3748;
+            margin-bottom: 20px;
         }
 
         .lecture-card {
@@ -211,46 +418,167 @@
             transform: translateY(-2px);
         }
 
+        .lecture-card h4 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .lecture-card .meta {
+            color: #718096;
+            font-size: 0.9em;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-badge.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.processing {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+
+        .spinner.show {
+            display: block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         @media (max-width: 768px) {
-            header h1 {
+            .header-left h1 {
                 font-size: 1.8em;
+            }
+            
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .header-right {
+                margin-top: 15px;
+                text-align: center;
             }
             
             .main-content {
                 padding: 20px;
             }
+
+            .notes-title {
+                font-size: 1.5em;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🎓 Lecture Voice-to-Notes</h1>
-            <p>Transform your lectures into structured, searchable notes</p>
-        </header>
-
-        <div class="main-content">
-            <div class="upload-section">
-                <h2>Upload or Record Your Lecture</h2>
-                <p style="margin: 15px 0; color: #666;">Supports MP3, WAV, M4A formats</p>
-                
-                <input type="file" id="audioFile" accept="audio/*">
-                <button class="upload-btn" onclick="document.getElementById('audioFile').click()">
-                    📁 Upload Audio File
-                </button>
-                
-                <button class="upload-btn record-btn" onclick="toggleRecording()">
-                    🎤 Record Live
-                </button>
-                
-                <div class="recording-indicator" id="recordingIndicator">
-                    ● Recording in progress...
+    <!-- Auth Modal -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-box">
+            <div id="loginForm">
+                <h2>🎓 Login</h2>
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="loginEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    <button type="submit" class="auth-btn" id="loginBtn">Login</button>
+                </form>
+                <div class="auth-switch">
+                    Don't have an account? <a onclick="showRegister()">Register</a>
                 </div>
             </div>
 
-            <div class="processing" id="processingStatus">
-                ⏳ Processing your lecture... This may take a few minutes.
+            <div id="registerForm" style="display: none;">
+                <h2>📝 Register</h2>
+                <form onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="registerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="registerEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="registerPassword" minlength="6" required>
+                    </div>
+                    <button type="submit" class="auth-btn" id="registerBtn">Register</button>
+                </form>
+                <div class="auth-switch">
+                    Already have an account? <a onclick="showLogin()">Login</a>
+                </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <h1>🎓 Lecture Voice-to-Notes</h1>
+                <p>Transform your lectures into structured, searchable notes powered by AI</p>
+            </div>
+            <div class="header-right">
+                <div class="user-info" id="userInfo">
+                    <div class="user-name" id="userName"></div>
+                    <button class="logout-btn" onclick="handleLogout()">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content" id="mainContent">
+            <div class="upload-section">
+                <h2>Upload Your Lecture</h2>
+                <p style="margin: 15px 0; color: #666;">Supports MP3, WAV, M4A, WebM formats (max 100MB)</p>
+                
+                <input 
+                    type="text" 
+                    id="lectureTitle" 
+                    class="title-input" 
+                    placeholder="Enter lecture title (optional)"
+                >
+                
+                <input type="file" id="audioFile" accept="audio/*">
+                <button class="upload-btn" id="uploadButton" onclick="document.getElementById('audioFile').click()">
+                    📁 Choose Audio File
+                </button>
+
+                <div class="spinner" id="spinner"></div>
+            </div>
+
+            <div class="status-message" id="statusMessage"></div>
 
             <div class="notes-container" id="notesContainer">
                 <h2 class="notes-title" id="notesTitle">Lecture Title</h2>
@@ -261,231 +589,373 @@
 
                 <div id="sectionsContainer"></div>
 
-                <div class="section">
+                <div class="section" id="keyTermsSection">
                     <h3>📌 Key Terms</h3>
                     <div class="key-terms" id="keyTerms"></div>
                 </div>
 
+                <div class="action-items" id="actionItemsSection" style="display: none;">
+                    <h4>✅ Action Items</h4>
+                    <ul id="actionItemsList"></ul>
+                </div>
+
                 <button class="download-btn" onclick="downloadNotes()">
-                    💾 Download Notes as PDF
+                    💾 Download Notes as Text
                 </button>
             </div>
 
             <div class="lectures-list" id="lecturesList">
-                <h3>Recent Lectures</h3>
-                <div id="lecturesContainer"></div>
+                <h3>📚 Recent Lectures</h3>
+                <div id="lecturesContainer">
+                    <p style="color: #718096;">No lectures yet. Upload your first lecture above!</p>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-    const API_URL = 'https://lecture-notes-api.onrender.com/api';
-    let mediaRecorder;
-    let audioChunks = [];
-    let currentUserId = 'user_123'; 
-
-    // File upload handler
-    document.getElementById('audioFile').addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        await uploadAudio(file);
-    });
-
-    // Updated Upload function with better ID handling
-    async function uploadAudio(file) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('title', file.name);
-        formData.append('user_id', currentUserId);
-
-        const statusEl = document.getElementById('processingStatus');
-        statusEl.style.display = 'block';
-        statusEl.textContent = "⏳ Uploading and waking up server...";
-
-        try {
-            const response = await fetch(`${API_URL}/lectures/upload`, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `Server error: ${response.status}`);
-            }
-
-            const result = await response.json();
-            console.log("Upload Success. Server Response:", result);
-
-            // FIX: Check for multiple possible ID keys (result.lecture_id or result._id)
-            const lectureId = result.lecture_id || result._id || result.id;
-
-            if (!lectureId) {
-                console.error("Full response for debugging:", result);
-                throw new Error("Server succeeded but didn't return a Lecture ID. Check console.");
-            }
-
-            if (result.status === 'completed') {
-                await loadNotes(lectureId);
-                statusEl.style.display = 'none';
-            } else {
-                statusEl.textContent = "⏳ Processing audio... this may take a minute.";
-                pollForCompletion(lectureId);
-            }
-        } catch (error) {
-            console.error('Upload Error:', error);
-            alert('Upload failed: ' + error.message);
-            statusEl.style.display = 'none';
-        }
-    }
-
-    // Fixed Polling function to prevent "undefined" calls
-    async function pollForCompletion(lectureId) {
-        if (!lectureId) return;
-
-        const interval = setInterval(async () => {
-            try {
-                const response = await fetch(`${API_URL}/notes/${lectureId}`);
-                
-                if (!response.ok) throw new Error("Note not found yet");
-                
-                const notes = await response.json();
-                
-                // Ensure the data exists before trying to display it
-                if (notes && notes.structured_notes) {
-                    clearInterval(interval);
-                    displayNotes(notes);
-                    document.getElementById('processingStatus').style.display = 'none';
-                }
-            } catch (error) {
-                // We keep polling silently until it's ready
-                console.log('Still waiting for processing...');
-            }
-        }, 5000);
-    }
-
-    function displayNotes(notesData) {
-        const notes = notesData.structured_notes;
-        if (!notes) return;
-
-        document.getElementById('notesTitle').textContent = notes.title || "Untitled Lecture";
-        document.getElementById('notesSummary').textContent = notes.summary || "No summary available.";
-
-        const sectionsContainer = document.getElementById('sectionsContainer');
-        sectionsContainer.innerHTML = '';
+        // Configuration
+        const API_URL = 'https://lecture-notes-api.onrender.com/api';
         
-        if (notes.sections) {
-            notes.sections.forEach(section => {
-                const sectionDiv = document.createElement('div');
-                sectionDiv.className = 'section';
-                sectionDiv.innerHTML = `
-                    <h3>${section.heading}</h3>
-                    <ul class="bullet-points">
-                        ${section.bullet_points.map(point => `<li>${point}</li>`).join('')}
-                    </ul>
-                `;
-                sectionsContainer.appendChild(sectionDiv);
-            });
-        }
+        // Auth state
+        let authToken = localStorage.getItem('authToken');
+        let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 
-        const keyTermsContainer = document.getElementById('keyTerms');
-        keyTermsContainer.innerHTML = '';
-        if (notes.key_terms) {
-            notes.key_terms.forEach(term => {
-                const tag = document.createElement('span');
-                tag.className = 'term-tag';
-                tag.textContent = term;
-                keyTermsContainer.appendChild(tag);
-            });
-        }
-
-        document.getElementById('notesContainer').style.display = 'block';
-    }
-
-    // Recording logic (unchanged but wrapped in try/catch)
-    async function toggleRecording() {
-        try {
-            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
-                await startRecording();
+        // Initialize app
+        function initApp() {
+            if (authToken && currentUser) {
+                showMainApp();
             } else {
-                stopRecording();
+                showAuthModal();
             }
-        } catch (err) {
-            alert("Recording error: " + err.message);
         }
-    }
 
-    async function startRecording() {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
-        audioChunks = [];
-        mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
-        mediaRecorder.onstop = async () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-            const audioFile = new File([audioBlob], 'recording.wav', { type: 'audio/wav' });
-            await uploadAudio(audioFile);
-        };
-        mediaRecorder.start();
-        document.getElementById('recordingIndicator').style.display = 'block';
-    }
-
-    function stopRecording() {
-        if(mediaRecorder) {
-            mediaRecorder.stop();
-            document.getElementById('recordingIndicator').style.display = 'none';
-            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        function showAuthModal() {
+            document.getElementById('authModal').classList.remove('hidden');
+            document.getElementById('mainContent').classList.remove('show');
         }
-    }
 
-    function downloadNotes() {
-        const notesContent = document.getElementById('notesContainer').innerText;
-        const blob = new Blob([notesContent], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'lecture-notes.txt';
-        a.click();
-    }
+        function hideAuthModal() {
+            document.getElementById('authModal').classList.add('hidden');
+            document.getElementById('mainContent').classList.add('show');
+        }
 
-    async function loadUserLectures() {
-        try {
-            const response = await fetch(`${API_URL}/lectures/user/${currentUserId}`);
-            if (!response.ok) return;
-            const lectures = await response.json();
+        function showMainApp() {
+            hideAuthModal();
+            document.getElementById('userInfo').classList.add('show');
+            document.getElementById('userName').textContent = `👤 ${currentUser.name}`;
+            loadUserLectures();
+        }
+
+        function showLogin() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+        }
+
+        function showRegister() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+        }
+
+        // Authentication handlers
+        async function handleLogin(event) {
+            event.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.textContent = 'Logging in...';
+
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: document.getElementById('loginEmail').value,
+                        password: document.getElementById('loginPassword').value
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Login failed');
+                }
+
+                const data = await response.json();
+                authToken = data.access_token;
+                currentUser = data.user;
+                
+                localStorage.setItem('authToken', authToken);
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                showMainApp();
+            } catch (error) {
+                alert('Login failed: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Login';
+            }
+        }
+
+        async function handleRegister(event) {
+            event.preventDefault();
+            const btn = document.getElementById('registerBtn');
+            btn.disabled = true;
+            btn.textContent = 'Registering...';
+
+            try {
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: document.getElementById('registerName').value,
+                        email: document.getElementById('registerEmail').value,
+                        password: document.getElementById('registerPassword').value
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Registration failed');
+                }
+
+                const data = await response.json();
+                authToken = data.access_token;
+                currentUser = data.user;
+                
+                localStorage.setItem('authToken', authToken);
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                showMainApp();
+            } catch (error) {
+                alert('Registration failed: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Register';
+            }
+        }
+
+        function handleLogout() {
+            authToken = null;
+            currentUser = null;
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('currentUser');
             
-            const container = document.getElementById('lecturesContainer');
-            container.innerHTML = '';
+            document.getElementById('userInfo').classList.remove('show');
+            document.getElementById('notesContainer').classList.remove('show');
+            showAuthModal();
+        }
+
+        // File upload handler
+        document.getElementById('audioFile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            await uploadAudio(file);
+        });
+
+        // Upload audio with authentication
+        async function uploadAudio(file) {
+            const title = document.getElementById('lectureTitle').value || file.name;
             
-            lectures.forEach(lecture => {
-                const card = document.createElement('div');
-                card.className = 'lecture-card';
-                const id = lecture._id || lecture.id;
-                card.innerHTML = `
-                    <h4>${lecture.title || 'Untitled'}</h4>
-                    <p>Uploaded: ${new Date(lecture.upload_date).toLocaleDateString()}</p>
-                    <span style="color: ${lecture.status === 'completed' ? 'green' : 'orange'}">
-                        ${lecture.status}
-                    </span>
-                `;
-                card.onclick = () => loadNotes(id);
-                container.appendChild(card);
-            });
-        } catch (error) {
-            console.error('Error loading lectures:', error);
-        }
-    }
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('title', title);
 
-    async function loadNotes(lectureId) {
-        if (!lectureId) return;
-        try {
-            const response = await fetch(`${API_URL}/notes/${lectureId}`);
-            const notes = await response.json();
-            displayNotes(notes);
-        } catch (error) {
-            console.error('Error loading notes:', error);
-        }
-    }
+            showStatus('processing', '⏳ Processing your lecture... This may take a few minutes.');
+            document.getElementById('spinner').classList.add('show');
+            document.getElementById('uploadButton').disabled = true;
+            document.getElementById('notesContainer').classList.remove('show');
 
-    window.addEventListener('load', loadUserLectures);
-</script>
+            try {
+                const response = await fetch(`${API_URL}/lectures/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        handleLogout();
+                        throw new Error('Session expired. Please login again.');
+                    }
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Upload failed');
+                }
+
+                const result = await response.json();
+                
+                showStatus('success', '✅ Notes generated successfully!');
+                await loadNotes(result.lecture_id);
+                await loadUserLectures();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus('error', `❌ Error: ${error.message}`);
+            } finally {
+                document.getElementById('spinner').classList.remove('show');
+                document.getElementById('uploadButton').disabled = false;
+                document.getElementById('audioFile').value = '';
+                document.getElementById('lectureTitle').value = '';
+            }
+        }
+
+        function showStatus(type, message) {
+            const statusMessage = document.getElementById('statusMessage');
+            statusMessage.className = `status-message ${type}`;
+            statusMessage.textContent = message;
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusMessage.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        async function loadNotes(lectureId) {
+            try {
+                const response = await fetch(`${API_URL}/notes/${lectureId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load notes');
+
+                const data = await response.json();
+                displayNotes(data.structured_notes);
+                
+            } catch (error) {
+                console.error('Error loading notes:', error);
+                showStatus('error', 'Failed to load notes');
+            }
+        }
+
+        function displayNotes(notes) {
+            document.getElementById('notesTitle').textContent = notes.title || 'Lecture Notes';
+            document.getElementById('notesSummary').textContent = notes.summary || 'No summary available';
+
+            const sectionsContainer = document.getElementById('sectionsContainer');
+            sectionsContainer.innerHTML = '';
+            
+            if (notes.sections && notes.sections.length > 0) {
+                notes.sections.forEach(section => {
+                    const sectionDiv = document.createElement('div');
+                    sectionDiv.className = 'section';
+                    
+                    let html = `<h3>${section.heading}</h3>`;
+                    
+                    if (section.content) {
+                        html += `<div class="section-content">${section.content}</div>`;
+                    }
+                    
+                    if (section.bullet_points && section.bullet_points.length > 0) {
+                        html += '<ul class="bullet-points">';
+                        section.bullet_points.forEach(point => {
+                            html += `<li>${point}</li>`;
+                        });
+                        html += '</ul>';
+                    }
+                    
+                    sectionDiv.innerHTML = html;
+                    sectionsContainer.appendChild(sectionDiv);
+                });
+            }
+
+            const keyTermsContainer = document.getElementById('keyTerms');
+            keyTermsContainer.innerHTML = '';
+            
+            if (notes.key_terms && notes.key_terms.length > 0) {
+                notes.key_terms.forEach(term => {
+                    const tag = document.createElement('span');
+                    tag.className = 'term-tag';
+                    tag.textContent = term;
+                    keyTermsContainer.appendChild(tag);
+                });
+            } else {
+                keyTermsContainer.innerHTML = '<p style="color: #718096;">No key terms identified</p>';
+            }
+
+            const actionItemsSection = document.getElementById('actionItemsSection');
+            const actionItemsList = document.getElementById('actionItemsList');
+            
+            if (notes.action_items && notes.action_items.length > 0) {
+                actionItemsSection.style.display = 'block';
+                actionItemsList.innerHTML = '';
+                notes.action_items.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    actionItemsList.appendChild(li);
+                });
+            } else {
+                actionItemsSection.style.display = 'none';
+            }
+
+            document.getElementById('notesContainer').classList.add('show');
+            document.getElementById('notesContainer').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function loadUserLectures() {
+            try {
+                const response = await fetch(`${API_URL}/lectures/user`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) return;
+
+                const lectures = await response.json();
+                const lecturesContainer = document.getElementById('lecturesContainer');
+                
+                if (lectures.length === 0) {
+                    lecturesContainer.innerHTML = '<p style="color: #718096;">No lectures yet. Upload your first lecture above!</p>';
+                    return;
+                }
+
+                lecturesContainer.innerHTML = '';
+                
+                lectures.forEach(lecture => {
+                    const card = document.createElement('div');
+                    card.className = 'lecture-card';
+                    
+                    const statusClass = lecture.status === 'completed' ? 'completed' : 
+                                       lecture.status === 'processing' ? 'processing' : 'failed';
+                    
+                    card.innerHTML = `
+                        <h4>${lecture.title}</h4>
+                        <div class="meta">
+                            <span>📅 ${new Date(lecture.upload_date).toLocaleDateString()}</span>
+                            <span class="status-badge ${statusClass}">${lecture.status}</span>
+                        </div>
+                    `;
+                    
+                    if (lecture.status === 'completed') {
+                        card.onclick = () => loadNotes(lecture._id);
+                    }
+                    
+                    lecturesContainer.appendChild(card);
+                });
+                
+            } catch (error) {
+                console.error('Error loading lectures:', error);
+            }
+        }
+
+        function downloadNotes() {
+            const title = document.getElementById('notesTitle').textContent;
+            const content = document.getElementById('notesContainer').innerText;
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${title.replace(/[^a-z0-9]/gi, '_')}_notes.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', initApp);
+    </script>
 </body>
 </html>
