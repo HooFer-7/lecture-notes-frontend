@@ -279,200 +279,213 @@
     </div>
 
     <script>
-        const API_URL = 'https://lecture-notes-api.onrender.com';
-        let mediaRecorder;
-        let audioChunks = [];
-        let currentUserId = 'user_123'; // In production, get from authentication
+    const API_URL = 'https://lecture-notes-api.onrender.com';
+    let mediaRecorder;
+    let audioChunks = [];
+    let currentUserId = 'user_123'; 
 
-        // File upload handler
-        document.getElementById('audioFile').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            await uploadAudio(file);
-        });
+    // File upload handler
+    document.getElementById('audioFile').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        await uploadAudio(file);
+    });
 
-        // Upload audio to backend
-        async function uploadAudio(file) {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('title', file.name);
-            formData.append('user_id', currentUserId);
+    // Updated Upload function with better ID handling
+    async function uploadAudio(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('title', file.name);
+        formData.append('user_id', currentUserId);
 
-            document.getElementById('processingStatus').style.display = 'block';
+        const statusEl = document.getElementById('processingStatus');
+        statusEl.style.display = 'block';
+        statusEl.textContent = "⏳ Uploading and waking up server...";
 
+        try {
+            const response = await fetch(`${API_URL}/lectures/upload`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `Server error: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log("Upload Success. Server Response:", result);
+
+            // FIX: Check for multiple possible ID keys (result.lecture_id or result._id)
+            const lectureId = result.lecture_id || result._id || result.id;
+
+            if (!lectureId) {
+                console.error("Full response for debugging:", result);
+                throw new Error("Server succeeded but didn't return a Lecture ID. Check console.");
+            }
+
+            if (result.status === 'completed') {
+                await loadNotes(lectureId);
+                statusEl.style.display = 'none';
+            } else {
+                statusEl.textContent = "⏳ Processing audio... this may take a minute.";
+                pollForCompletion(lectureId);
+            }
+        } catch (error) {
+            console.error('Upload Error:', error);
+            alert('Upload failed: ' + error.message);
+            statusEl.style.display = 'none';
+        }
+    }
+
+    // Fixed Polling function to prevent "undefined" calls
+    async function pollForCompletion(lectureId) {
+        if (!lectureId) return;
+
+        const interval = setInterval(async () => {
             try {
-                const response = await fetch(`${API_URL}/lectures/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
+                const response = await fetch(`${API_URL}/notes/${lectureId}`);
                 
-                if (result.status === 'completed') {
-                    await loadNotes(result.lecture_id);
+                if (!response.ok) throw new Error("Note not found yet");
+                
+                const notes = await response.json();
+                
+                // Ensure the data exists before trying to display it
+                if (notes && notes.structured_notes) {
+                    clearInterval(interval);
+                    displayNotes(notes);
                     document.getElementById('processingStatus').style.display = 'none';
-                } else {
-                    pollForCompletion(result.lecture_id);
                 }
             } catch (error) {
-                alert('Error uploading file: ' + error.message);
-                document.getElementById('processingStatus').style.display = 'none';
+                // We keep polling silently until it's ready
+                console.log('Still waiting for processing...');
             }
-        }
+        }, 5000);
+    }
 
-        // Poll for processing completion
-        async function pollForCompletion(lectureId) {
-            const interval = setInterval(async () => {
-                try {
-                    const response = await fetch(`${API_URL}/notes/${lectureId}`);
-                    const notes = await response.json();
-                    
-                    if (notes.structured_notes) {
-                        clearInterval(interval);
-                        displayNotes(notes);
-                        document.getElementById('processingStatus').style.display = 'none';
-                    }
-                } catch (error) {
-                    console.log('Still processing...');
-                }
-            }, 5000);
-        }
+    function displayNotes(notesData) {
+        const notes = notesData.structured_notes;
+        if (!notes) return;
 
-        // Display structured notes
-        function displayNotes(notesData) {
-            const notes = notesData.structured_notes;
-            
-            document.getElementById('notesTitle').textContent = notes.title;
-            document.getElementById('notesSummary').textContent = notes.summary;
+        document.getElementById('notesTitle').textContent = notes.title || "Untitled Lecture";
+        document.getElementById('notesSummary').textContent = notes.summary || "No summary available.";
 
-            // Render sections
-            const sectionsContainer = document.getElementById('sectionsContainer');
-            sectionsContainer.innerHTML = '';
-            
+        const sectionsContainer = document.getElementById('sectionsContainer');
+        sectionsContainer.innerHTML = '';
+        
+        if (notes.sections) {
             notes.sections.forEach(section => {
                 const sectionDiv = document.createElement('div');
                 sectionDiv.className = 'section';
-                
-                const heading = document.createElement('h3');
-                heading.textContent = section.heading;
-                
-                const bulletList = document.createElement('ul');
-                bulletList.className = 'bullet-points';
-                
-                section.bullet_points.forEach(point => {
-                    const li = document.createElement('li');
-                    li.textContent = point;
-                    bulletList.appendChild(li);
-                });
-                
-                sectionDiv.appendChild(heading);
-                sectionDiv.appendChild(bulletList);
+                sectionDiv.innerHTML = `
+                    <h3>${section.heading}</h3>
+                    <ul class="bullet-points">
+                        ${section.bullet_points.map(point => `<li>${point}</li>`).join('')}
+                    </ul>
+                `;
                 sectionsContainer.appendChild(sectionDiv);
             });
+        }
 
-            // Render key terms
-            const keyTermsContainer = document.getElementById('keyTerms');
-            keyTermsContainer.innerHTML = '';
-            
+        const keyTermsContainer = document.getElementById('keyTerms');
+        keyTermsContainer.innerHTML = '';
+        if (notes.key_terms) {
             notes.key_terms.forEach(term => {
                 const tag = document.createElement('span');
                 tag.className = 'term-tag';
                 tag.textContent = term;
                 keyTermsContainer.appendChild(tag);
             });
-
-            document.getElementById('notesContainer').style.display = 'block';
         }
 
-        // Recording functionality
-        async function toggleRecording() {
+        document.getElementById('notesContainer').style.display = 'block';
+    }
+
+    // Recording logic (unchanged but wrapped in try/catch)
+    async function toggleRecording() {
+        try {
             if (!mediaRecorder || mediaRecorder.state === 'inactive') {
                 await startRecording();
             } else {
                 stopRecording();
             }
+        } catch (err) {
+            alert("Recording error: " + err.message);
         }
+    }
 
-        async function startRecording() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
+    async function startRecording() {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            const audioFile = new File([audioBlob], 'recording.wav', { type: 'audio/wav' });
+            await uploadAudio(audioFile);
+        };
+        mediaRecorder.start();
+        document.getElementById('recordingIndicator').style.display = 'block';
+    }
 
-                mediaRecorder.ondataavailable = (event) => {
-                    audioChunks.push(event.data);
-                };
-
-                mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    const audioFile = new File([audioBlob], 'recording.wav', { type: 'audio/wav' });
-                    await uploadAudio(audioFile);
-                };
-
-                mediaRecorder.start();
-                document.getElementById('recordingIndicator').style.display = 'block';
-            } catch (error) {
-                alert('Could not access microphone: ' + error.message);
-            }
-        }
-
-        function stopRecording() {
+    function stopRecording() {
+        if(mediaRecorder) {
             mediaRecorder.stop();
             document.getElementById('recordingIndicator').style.display = 'none';
             mediaRecorder.stream.getTracks().forEach(track => track.stop());
         }
+    }
 
-        // Download notes as PDF (simplified - use jsPDF library in production)
-        function downloadNotes() {
-            const notesContent = document.getElementById('notesContainer').innerText;
-            const blob = new Blob([notesContent], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'lecture-notes.txt';
-            a.click();
+    function downloadNotes() {
+        const notesContent = document.getElementById('notesContainer').innerText;
+        const blob = new Blob([notesContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'lecture-notes.txt';
+        a.click();
+    }
+
+    async function loadUserLectures() {
+        try {
+            const response = await fetch(`${API_URL}/lectures/user/${currentUserId}`);
+            if (!response.ok) return;
+            const lectures = await response.json();
+            
+            const container = document.getElementById('lecturesContainer');
+            container.innerHTML = '';
+            
+            lectures.forEach(lecture => {
+                const card = document.createElement('div');
+                card.className = 'lecture-card';
+                const id = lecture._id || lecture.id;
+                card.innerHTML = `
+                    <h4>${lecture.title || 'Untitled'}</h4>
+                    <p>Uploaded: ${new Date(lecture.upload_date).toLocaleDateString()}</p>
+                    <span style="color: ${lecture.status === 'completed' ? 'green' : 'orange'}">
+                        ${lecture.status}
+                    </span>
+                `;
+                card.onclick = () => loadNotes(id);
+                container.appendChild(card);
+            });
+        } catch (error) {
+            console.error('Error loading lectures:', error);
         }
+    }
 
-        // Load user's lectures on page load
-        async function loadUserLectures() {
-            try {
-                const response = await fetch(`${API_URL}/lectures/user/${currentUserId}`);
-                const lectures = await response.json();
-                
-                const container = document.getElementById('lecturesContainer');
-                container.innerHTML = '';
-                
-                lectures.forEach(lecture => {
-                    const card = document.createElement('div');
-                    card.className = 'lecture-card';
-                    card.innerHTML = `
-                        <h4>${lecture.title}</h4>
-                        <p>Uploaded: ${new Date(lecture.upload_date).toLocaleDateString()}</p>
-                        <span style="color: ${lecture.status === 'completed' ? 'green' : 'orange'}">
-                            ${lecture.status}
-                        </span>
-                    `;
-                    card.onclick = () => loadNotes(lecture._id);
-                    container.appendChild(card);
-                });
-            } catch (error) {
-                console.error('Error loading lectures:', error);
-            }
+    async function loadNotes(lectureId) {
+        if (!lectureId) return;
+        try {
+            const response = await fetch(`${API_URL}/notes/${lectureId}`);
+            const notes = await response.json();
+            displayNotes(notes);
+        } catch (error) {
+            console.error('Error loading notes:', error);
         }
+    }
 
-        async function loadNotes(lectureId) {
-            try {
-                const response = await fetch(`${API_URL}/notes/${lectureId}`);
-                const notes = await response.json();
-                displayNotes(notes);
-            } catch (error) {
-                console.error('Error loading notes:', error);
-            }
-        }
-
-        // Initialize
-        window.addEventListener('load', loadUserLectures);
-    </script>
+    window.addEventListener('load', loadUserLectures);
+</script>
 </body>
 </html>
