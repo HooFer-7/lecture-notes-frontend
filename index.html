@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture Voice-to-Notes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #5e72e4, #825ee4);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            border: 2px dashed #dee2e6;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+        }
+
+        .upload-section:hover {
+            border-color: #667eea;
+            background: #f1f3ff;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin: 10px;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .record-btn {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .recording-indicator {
+            display: none;
+            color: #f5576c;
+            margin-top: 15px;
+            font-weight: bold;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .processing {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .notes-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .notes-title {
+            font-size: 2em;
+            color: #2d3748;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .notes-summary {
+            background: #e6f3ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h3 {
+            color: #667eea;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .bullet-points {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .bullet-points li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .bullet-points li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .key-terms {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .term-tag {
+            background: #e6f3ff;
+            color: #667eea;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .download-btn {
+            background: #28a745;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 1em;
+        }
+
+        .lectures-list {
+            margin-top: 30px;
+        }
+
+        .lecture-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .lecture-card:hover {
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎓 Lecture Voice-to-Notes</h1>
+            <p>Transform your lectures into structured, searchable notes</p>
+        </header>
+
+        <div class="main-content">
+            <div class="upload-section">
+                <h2>Upload or Record Your Lecture</h2>
+                <p style="margin: 15px 0; color: #666;">Supports MP3, WAV, M4A formats</p>
+                
+                <input type="file" id="audioFile" accept="audio/*">
+                <button class="upload-btn" onclick="document.getElementById('audioFile').click()">
+                    📁 Upload Audio File
+                </button>
+                
+                <button class="upload-btn record-btn" onclick="toggleRecording()">
+                    🎤 Record Live
+                </button>
+                
+                <div class="recording-indicator" id="recordingIndicator">
+                    ● Recording in progress...
+                </div>
+            </div>
+
+            <div class="processing" id="processingStatus">
+                ⏳ Processing your lecture... This may take a few minutes.
+            </div>
+
+            <div class="notes-container" id="notesContainer">
+                <h2 class="notes-title" id="notesTitle">Lecture Title</h2>
+                
+                <div class="notes-summary" id="notesSummary">
+                    Summary will appear here...
+                </div>
+
+                <div id="sectionsContainer"></div>
+
+                <div class="section">
+                    <h3>📌 Key Terms</h3>
+                    <div class="key-terms" id="keyTerms"></div>
+                </div>
+
+                <button class="download-btn" onclick="downloadNotes()">
+                    💾 Download Notes as PDF
+                </button>
+            </div>
+
+            <div class="lectures-list" id="lecturesList">
+                <h3>Recent Lectures</h3>
+                <div id="lecturesContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://lecture-notes-api.onrender.com';
+        let mediaRecorder;
+        let audioChunks = [];
+        let currentUserId = 'user_123'; // In production, get from authentication
+
+        // File upload handler
+        document.getElementById('audioFile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            await uploadAudio(file);
+        });
+
+        // Upload audio to backend
+        async function uploadAudio(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('title', file.name);
+            formData.append('user_id', currentUserId);
+
+            document.getElementById('processingStatus').style.display = 'block';
+
+            try {
+                const response = await fetch(`${API_URL}/lectures/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'completed') {
+                    await loadNotes(result.lecture_id);
+                    document.getElementById('processingStatus').style.display = 'none';
+                } else {
+                    pollForCompletion(result.lecture_id);
+                }
+            } catch (error) {
+                alert('Error uploading file: ' + error.message);
+                document.getElementById('processingStatus').style.display = 'none';
+            }
+        }
+
+        // Poll for processing completion
+        async function pollForCompletion(lectureId) {
+            const interval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${API_URL}/notes/${lectureId}`);
+                    const notes = await response.json();
+                    
+                    if (notes.structured_notes) {
+                        clearInterval(interval);
+                        displayNotes(notes);
+                        document.getElementById('processingStatus').style.display = 'none';
+                    }
+                } catch (error) {
+                    console.log('Still processing...');
+                }
+            }, 5000);
+        }
+
+        // Display structured notes
+        function displayNotes(notesData) {
+            const notes = notesData.structured_notes;
+            
+            document.getElementById('notesTitle').textContent = notes.title;
+            document.getElementById('notesSummary').textContent = notes.summary;
+
+            // Render sections
+            const sectionsContainer = document.getElementById('sectionsContainer');
+            sectionsContainer.innerHTML = '';
+            
+            notes.sections.forEach(section => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'section';
+                
+                const heading = document.createElement('h3');
+                heading.textContent = section.heading;
+                
+                const bulletList = document.createElement('ul');
+                bulletList.className = 'bullet-points';
+                
+                section.bullet_points.forEach(point => {
+                    const li = document.createElement('li');
+                    li.textContent = point;
+                    bulletList.appendChild(li);
+                });
+                
+                sectionDiv.appendChild(heading);
+                sectionDiv.appendChild(bulletList);
+                sectionsContainer.appendChild(sectionDiv);
+            });
+
+            // Render key terms
+            const keyTermsContainer = document.getElementById('keyTerms');
+            keyTermsContainer.innerHTML = '';
+            
+            notes.key_terms.forEach(term => {
+                const tag = document.createElement('span');
+                tag.className = 'term-tag';
+                tag.textContent = term;
+                keyTermsContainer.appendChild(tag);
+            });
+
+            document.getElementById('notesContainer').style.display = 'block';
+        }
+
+        // Recording functionality
+        async function toggleRecording() {
+            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+                await startRecording();
+            } else {
+                stopRecording();
+            }
+        }
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const audioFile = new File([audioBlob], 'recording.wav', { type: 'audio/wav' });
+                    await uploadAudio(audioFile);
+                };
+
+                mediaRecorder.start();
+                document.getElementById('recordingIndicator').style.display = 'block';
+            } catch (error) {
+                alert('Could not access microphone: ' + error.message);
+            }
+        }
+
+        function stopRecording() {
+            mediaRecorder.stop();
+            document.getElementById('recordingIndicator').style.display = 'none';
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        }
+
+        // Download notes as PDF (simplified - use jsPDF library in production)
+        function downloadNotes() {
+            const notesContent = document.getElementById('notesContainer').innerText;
+            const blob = new Blob([notesContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'lecture-notes.txt';
+            a.click();
+        }
+
+        // Load user's lectures on page load
+        async function loadUserLectures() {
+            try {
+                const response = await fetch(`${API_URL}/lectures/user/${currentUserId}`);
+                const lectures = await response.json();
+                
+                const container = document.getElementById('lecturesContainer');
+                container.innerHTML = '';
+                
+                lectures.forEach(lecture => {
+                    const card = document.createElement('div');
+                    card.className = 'lecture-card';
+                    card.innerHTML = `
+                        <h4>${lecture.title}</h4>
+                        <p>Uploaded: ${new Date(lecture.upload_date).toLocaleDateString()}</p>
+                        <span style="color: ${lecture.status === 'completed' ? 'green' : 'orange'}">
+                            ${lecture.status}
+                        </span>
+                    `;
+                    card.onclick = () => loadNotes(lecture._id);
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error loading lectures:', error);
+            }
+        }
+
+        async function loadNotes(lectureId) {
+            try {
+                const response = await fetch(`${API_URL}/notes/${lectureId}`);
+                const notes = await response.json();
+                displayNotes(notes);
+            } catch (error) {
+                console.error('Error loading notes:', error);
+            }
+        }
+
+        // Initialize
+        window.addEventListener('load', loadUserLectures);
+    </script>
+</body>
+</html>
